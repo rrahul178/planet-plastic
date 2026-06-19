@@ -201,22 +201,42 @@ tr.row-hover:hover{background:#FAFBFB;}
 </div>
 <div class="toast-wrap" id="toastWrap"></div>
 
-<script>
+<script type="module">
+/* ===================== FIREBASE INIT ===================== */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyANzXy3kD9eNHKam2_obU6tvtXA1CJwgR0",
+  authDomain: "planet-plastic-5d1de.firebaseapp.com",
+  projectId: "planet-plastic-5d1de",
+  storageBucket: "planet-plastic-5d1de.firebasestorage.app",
+  messagingSenderId: "656388289322",
+  appId: "1:656388289322:web:df5fce81b4d045f5b5e453"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const STORE_DOC = "workspace/main";
+
 /* ===================== STORAGE HELPERS ===================== */
-/* Uses browser localStorage — works on GitHub Pages / any normal web host.
-   Data is saved per-browser, per-device (not synced across devices). */
+/* Uses Firebase Firestore — syncs across all devices in real time */
 async function storeGet(key, fallback){
   try{
-    const v = localStorage.getItem(key);
-    return v !== null ? JSON.parse(v) : fallback;
-  }catch(e){ return fallback; }
+    const snap = await getDoc(doc(db, STORE_DOC.split('/')[0], STORE_DOC.split('/')[1]));
+    if(snap.exists() && snap.data()[key] !== undefined) return snap.data()[key];
+    return fallback;
+  }catch(e){ console.error('storeGet error', e); return fallback; }
 }
 async function storeSet(key, value){
   try{
-    localStorage.setItem(key, JSON.stringify(value));
+    await setDoc(doc(db, STORE_DOC.split('/')[0], STORE_DOC.split('/')[1]), { [key]: value }, { merge: true });
     return true;
-  }catch(e){ toast('Could not save — your browser storage may be full or blocked.', true); return false; }
+  }catch(e){ toast('Firebase save error: ' + e.message, true); return false; }
 }
+
+/* expose globals needed by inline onclick handlers */
+window.toggleSidebar = toggleSidebar;
 
 /* ===================== STATE ===================== */
 let STATE = { products: [], orders: [], invoices: [], transactions: [], counters: { order:0, invoice:0 } };
@@ -1005,6 +1025,24 @@ function wireContentEvents(){
 }
 
 document.addEventListener('keydown', (e) => { if(e.key==='Escape') closeModal(); });
+
+/* ===================== EXPOSE GLOBALS (module scope fix) ===================== */
+const _globals = [
+  'renderApp','closeModal','clearAllData','seedDemo',
+  'openProductModal','openOrderModal','openInvoiceModal','openTransactionModal',
+  'deleteProduct','deleteOrder','deleteInvoice','deleteTransaction',
+  'editProduct','viewOrder','viewInvoice','printInvoice',
+  'toggleSidebar','renderContent','renderPLBody','buildCatOptions',
+  'wireContentEvents','toast','fmt','escapeHtml','todayISO','uid'
+];
+_globals.forEach(fn => { try{ window[fn] = eval(fn); }catch(e){} });
+
+// Also expose mutable state refs via getters/setters
+Object.defineProperty(window, 'TAB', { get:()=>TAB, set:(v)=>{ TAB=v; } });
+Object.defineProperty(window, 'ACCT_SUBTAB', { get:()=>ACCT_SUBTAB, set:(v)=>{ ACCT_SUBTAB=v; } });
+Object.defineProperty(window, 'PL_FROM', { get:()=>PL_FROM, set:(v)=>{ PL_FROM=v; } });
+Object.defineProperty(window, 'PL_TO', { get:()=>PL_TO, set:(v)=>{ PL_TO=v; } });
+Object.defineProperty(window, 'STATE', { get:()=>STATE, set:(v)=>{ STATE=v; } });
 
 loadAll();
 </script>
