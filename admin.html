@@ -238,6 +238,16 @@ async function storeSet(key, value){
 /* expose globals needed by inline onclick handlers */
 window.toggleSidebar = toggleSidebar;
 
+// Proxy ORDER_LINES so inline onchange handlers can access and mutate it
+Object.defineProperty(window, 'ORDER_LINES', {
+  get(){ return ORDER_LINES; },
+  set(v){ ORDER_LINES = v; }
+});
+// Expose order line functions used in inline handlers
+window.renderOrderLines = function(){ renderOrderLines && renderOrderLines(); };
+window.addOrderLine = function(){ addOrderLine && addOrderLine(); };
+window.removeOrderLine = function(i){ removeOrderLine && removeOrderLine(i); };
+
 /* ===================== STATE ===================== */
 let STATE = { products: [], orders: [], invoices: [], transactions: [], counters: { order:0, invoice:0 } };
 let TAB = 'dashboard';
@@ -1036,6 +1046,13 @@ const _globals = [
   'wireContentEvents','toast','fmt','escapeHtml','todayISO','uid'
 ];
 _globals.forEach(fn => { try{ window[fn] = eval(fn); }catch(e){} });
+
+// Extra functions used in inline HTML handlers
+['renderOrderLines','addOrderLine','removeOrderLine',
+ 'openEditOrderModal','openEditInvoiceModal','openEditProductModal',
+ 'openEditTransactionModal','saveOrder','saveInvoice','saveProduct',
+ 'saveTransaction','renderInvoiceLines','addInvoiceLine','removeInvoiceLine'
+].forEach(fn => { try{ window[fn] = eval(fn); }catch(e){} });
 
 // Also expose mutable state refs via getters/setters
 Object.defineProperty(window, 'TAB', { get:()=>TAB, set:(v)=>{ TAB=v; } });
