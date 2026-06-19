@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planet Plastic — Operations &amp; Accounts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F6F6; --panel:#FFFFFF; --ink:#15242C; --ink-soft:#5B6B6E;
+  --primary:#0B6E4F; --primary-deep:#084E38; --primary-wash:rgba(11,110,79,0.08);
+  --accent:#E8A33D; --danger:#C24A3A; --danger-wash:rgba(194,74,58,0.08);
+  --line:#E1E7E6; --mono:'IBM Plex Mono',monospace; --display:'Space Grotesk',sans-serif; --body:'IBM Plex Sans',sans-serif;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{background:var(--bg); color:var(--ink); font-family:var(--body); font-size:14px; line-height:1.5;}
+button{font-family:var(--body); cursor:pointer;}
+input,select,textarea{font-family:var(--body); font-size:13.5px;}
+a{color:inherit;}
+
+.app{display:flex; min-height:100vh;}
+
+/* SIDEBAR */
+.sidebar{width:228px; flex-shrink:0; background:var(--ink); color:#fff; display:flex; flex-direction:column; padding:22px 14px;}
+.brand{display:flex; align-items:center; gap:9px; padding:0 8px 22px; border-bottom:1px solid rgba(255,255,255,0.12); margin-bottom:18px;}
+.brand svg{flex-shrink:0;}
+.brand .t1{font-family:var(--display); font-weight:700; font-size:15.5px; line-height:1.2;}
+.brand .t2{font-family:var(--mono); font-size:9.5px; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:.06em;}
+.navitem{
+  display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:5px; margin-bottom:3px;
+  color:rgba(255,255,255,0.68); font-size:13.5px; font-weight:500; cursor:pointer; transition:all .12s; border:none; background:none; width:100%; text-align:left;
+}
+.navitem svg{flex-shrink:0; opacity:.85;}
+.navitem:hover{background:rgba(255,255,255,0.06); color:#fff;}
+.navitem.active{background:var(--primary); color:#fff;}
+.nav-spacer{flex:1;}
+.sidebar-foot{padding:10px 12px; font-family:var(--mono); font-size:10px; color:rgba(255,255,255,0.35); border-top:1px solid rgba(255,255,255,0.1); margin-top:10px; padding-top:14px;}
+
+/* MAIN */
+.main{flex:1; min-width:0; display:flex; flex-direction:column;}
+.topbar{
+  height:64px; flex-shrink:0; background:var(--panel); border-bottom:1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between; padding:0 28px;
+}
+.topbar h1{font-family:var(--display); font-size:19px; font-weight:700;}
+.topbar .sub{font-family:var(--mono); font-size:11px; color:var(--ink-soft); margin-top:1px;}
+.content{padding:26px 28px 60px; flex:1;}
+
+/* BUTTONS */
+.btn{
+  font-size:13px; font-weight:600; padding:9px 16px; border-radius:5px; border:1px solid var(--primary-deep);
+  background:var(--primary-deep); color:#fff; display:inline-flex; align-items:center; gap:7px; transition:all .12s; white-space:nowrap;
+}
+.btn:hover{background:var(--primary);}
+.btn-ghost{background:transparent; color:var(--ink-soft); border-color:var(--line);}
+.btn-ghost:hover{background:#F0F3F2; color:var(--ink);}
+.btn-danger{background:transparent; color:var(--danger); border-color:rgba(194,74,58,0.35);}
+.btn-danger:hover{background:var(--danger-wash);}
+.btn-sm{padding:6px 11px; font-size:12px;}
+.icon-btn{background:none; border:none; color:var(--ink-soft); padding:5px; border-radius:4px; display:inline-flex;}
+.icon-btn:hover{background:#F0F3F2; color:var(--ink);}
+
+/* CARDS */
+.cards{display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-bottom:24px;}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:7px; padding:18px;}
+.card .l{font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft); margin-bottom:9px;}
+.card .v{font-family:var(--display); font-weight:700; font-size:22px;}
+.card .v.danger{color:var(--danger);}
+.card .v.good{color:var(--primary-deep);}
+.card .d{font-size:11px; color:var(--ink-soft); margin-top:5px;}
+
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:7px; margin-bottom:20px; overflow:hidden;}
+.panel-head{display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--line);}
+.panel-head h3{font-family:var(--display); font-size:15px; font-weight:600;}
+.panel-body{padding:4px 0;}
+.panel-body.pad{padding:18px 20px;}
+
+/* TABLE */
+table{width:100%; border-collapse:collapse;}
+th{
+  text-align:left; font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.04em;
+  color:var(--ink-soft); padding:10px 20px; border-bottom:1px solid var(--line); background:#FAFBFB;
+}
+td{padding:13px 20px; border-bottom:1px solid var(--line); font-size:13.5px; vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr.row-hover:hover{background:#FAFBFB;}
+.muted{color:var(--ink-soft);}
+.mono{font-family:var(--mono); font-size:12.5px;}
+.right{text-align:right;}
+.center{text-align:center;}
+
+.tag{font-family:var(--mono); font-size:10.5px; padding:3px 9px; border-radius:30px; display:inline-block; text-transform:uppercase; letter-spacing:.03em; font-weight:500;}
+.tag-pending{background:#FFF4E0; color:#8A5A0D;}
+.tag-processing{background:#E9F1FB; color:#1E5C9C;}
+.tag-shipped{background:#EFE9FB; color:#5B3C9C;}
+.tag-delivered{background:var(--primary-wash); color:var(--primary-deep);}
+.tag-cancelled{background:var(--danger-wash); color:var(--danger);}
+.tag-unpaid{background:var(--danger-wash); color:var(--danger);}
+.tag-partial{background:#FFF4E0; color:#8A5A0D;}
+.tag-paid{background:var(--primary-wash); color:var(--primary-deep);}
+.tag-income{background:var(--primary-wash); color:var(--primary-deep);}
+.tag-expense{background:var(--danger-wash); color:var(--danger);}
+.tag-low{background:var(--danger-wash); color:var(--danger);}
+.tag-ok{background:#EFF3F2; color:var(--ink-soft);}
+
+.empty{padding:50px 20px; text-align:center;}
+.empty .ico{width:40px; height:40px; margin:0 auto 14px; color:var(--line);}
+.empty h4{font-family:var(--display); font-size:15px; margin-bottom:6px;}
+.empty p{font-size:13px; color:var(--ink-soft); margin-bottom:18px;}
+
+/* MODAL */
+.overlay{position:fixed; inset:0; background:rgba(21,36,44,0.45); display:flex; align-items:flex-start; justify-content:center; padding:40px 20px; overflow-y:auto; z-index:200;}
+.modal{background:var(--panel); border-radius:8px; width:100%; max-width:560px; max-height:calc(100vh - 80px); display:flex; flex-direction:column;}
+.modal.wide{max-width:760px;}
+.modal-head{display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--line);}
+.modal-head h3{font-family:var(--display); font-size:16px; font-weight:600;}
+.modal-body{padding:20px 22px; overflow-y:auto;}
+.modal-foot{padding:16px 22px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:10px;}
+
+.field{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
+.field label{font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft);}
+.field input, .field select, .field textarea{
+  border:1px solid var(--line); border-radius:5px; padding:9px 11px; background:var(--bg); color:var(--ink);
+}
+.field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--primary); outline-offset:0; border-color:var(--primary);}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;}
+
+.line-items{border:1px solid var(--line); border-radius:6px; overflow:hidden; margin-bottom:6px;}
+.li-row{display:grid; grid-template-columns:2.2fr 0.8fr 1fr 1fr auto; gap:8px; padding:9px 10px; align-items:center; border-bottom:1px solid var(--line);}
+.li-row.head{background:#FAFBFB; font-family:var(--mono); font-size:9.5px; text-transform:uppercase; color:var(--ink-soft); padding:7px 10px;}
+.li-row:last-child{border-bottom:none;}
+.li-row select, .li-row input{padding:6px 8px; font-size:12.5px;}
+.li-remove{background:none; border:none; color:var(--danger); padding:4px; border-radius:4px;}
+.li-remove:hover{background:var(--danger-wash);}
+
+.tabbar{display:flex; gap:4px; margin-bottom:18px; border-bottom:1px solid var(--line);}
+.tabbtn{padding:10px 4px; margin-right:22px; background:none; border:none; font-size:13.5px; font-weight:600; color:var(--ink-soft); border-bottom:2px solid transparent; margin-bottom:-1px;}
+.tabbtn.active{color:var(--primary-deep); border-bottom-color:var(--primary-deep);}
+
+.toast-wrap{position:fixed; bottom:22px; right:22px; z-index:400; display:flex; flex-direction:column; gap:8px;}
+.toast{background:var(--ink); color:#fff; padding:11px 18px; border-radius:6px; font-size:13px; box-shadow:0 6px 18px rgba(0,0,0,0.18); animation:slideIn .2s ease;}
+.toast.err{background:var(--danger);}
+@keyframes slideIn{from{transform:translateY(8px); opacity:0;} to{transform:translateY(0); opacity:1;}}
+
+.filter-bar{display:flex; gap:10px; align-items:center; padding:14px 20px; border-bottom:1px solid var(--line); flex-wrap:wrap;}
+.filter-bar select, .filter-bar input{border:1px solid var(--line); border-radius:5px; padding:7px 10px; font-size:12.5px; background:var(--bg);}
+
+.pl-table td, .pl-table th{padding:11px 18px;}
+.pl-section{font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); background:#FAFBFB;}
+.pl-total{font-weight:700; border-top:2px solid var(--ink);}
+
+.loading-screen{display:flex; align-items:center; justify-content:center; height:100vh; flex-direction:column; gap:14px; color:var(--ink-soft); font-family:var(--mono); font-size:12.5px;}
+.spinner{width:26px; height:26px; border:2.5px solid var(--line); border-top-color:var(--primary); border-radius:50%; animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+@media (max-width: 880px){
+  .sidebar{position:fixed; left:-228px; top:0; bottom:0; z-index:300; transition:left .2s;}
+  .sidebar.open{left:0;}
+  .cards{grid-template-columns:repeat(2,1fr);}
+  .row2,.row3{grid-template-columns:1fr;}
+  .li-row{grid-template-columns:1fr; gap:6px;}
+  table{display:block; overflow-x:auto;}
+}
+</style>
+</head>
+<body>
+
+<div id="root">
+  <div class="loading-screen"><div class="spinner"></div><div>Loading workspace…</div></div>
+</div>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ===================== STORAGE HELPERS ===================== */
+/* Uses browser localStorage — works on GitHub Pages / any normal web host.
+   Data is saved per-browser, per-device (not synced across devices). */
+async function storeGet(key, fallback){
+  try{
+    const v = localStorage.getItem(key);
+    return v !== null ? JSON.parse(v) : fallback;
+  }catch(e){ return fallback; }
+}
+async function storeSet(key, value){
+  try{
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  }catch(e){ toast('Could not save — your browser storage may be full or blocked.', true); return false; }
+}
+
+/* ===================== STATE ===================== */
+let STATE = { products: [], orders: [], invoices: [], transactions: [], counters: { order:0, invoice:0 } };
+let TAB = 'dashboard';
+let ACCT_SUBTAB = 'ledger';
+let PL_FROM = null;
+let PL_TO = null;
+
+const PRODUCT_CATEGORIES = ['Droppers','Measuring Spoons','Applicators','Caps & Closures','Custom Molded Parts','Other'];
+const EXPENSE_CATEGORIES = ['Raw Material','Salary & Wages','Utility','Rent','Transport & Logistics','Maintenance','Marketing','Other'];
+const INCOME_CATEGORIES = ['Sales Revenue','Other Income'];
+const ORDER_STATUSES = ['Pending','Processing','Shipped','Delivered','Cancelled'];
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function fmt(n){ n = Number(n||0); return '৳' + n.toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:2}); }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function toast(msg, isErr){
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast' + (isErr ? ' err' : '');
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+/* ===================== LOAD ===================== */
+async function loadAll(){
+  const [products, orders, invoices, transactions, counters] = await Promise.all([
+    storeGet('pp_products', []),
+    storeGet('pp_orders', []),
+    storeGet('pp_invoices', []),
+    storeGet('pp_transactions', []),
+    storeGet('pp_counters', { order:0, invoice:0 })
+  ]);
+  STATE = { products, orders, invoices, transactions, counters };
+  renderApp();
+}
+
+async function saveProducts(){ await storeSet('pp_products', STATE.products); }
+async function saveOrders(){ await storeSet('pp_orders', STATE.orders); }
+async function saveInvoices(){ await storeSet('pp_invoices', STATE.invoices); }
+async function saveTransactions(){ await storeSet('pp_transactions', STATE.transactions); }
+async function saveCounters(){ await storeSet('pp_counters', STATE.counters); }
+
+function nextOrderNo(){ STATE.counters.order++; return 'ORD-' + String(STATE.counters.order).padStart(4,'0'); }
+function nextInvoiceNo(){ STATE.counters.invoice++; return 'INV-' + String(STATE.counters.invoice).padStart(4,'0'); }
+
+/* ===================== DEMO SEED ===================== */
+async function seedDemo(){
+  const p1 = { id: uid(), name:'5ml Calibrated Dropper', sku:'PP-DR-005', category:'Droppers', unit:'pcs', stock:18000, costPrice:1.8, sellPrice:2.6, reorderLevel:5000 };
+  const p2 = { id: uid(), name:'10ml Measuring Spoon (Dual)', sku:'PP-SP-010', category:'Measuring Spoons', unit:'pcs', stock:2200, costPrice:1.2, sellPrice:1.9, reorderLevel:3000 };
+  const p3 = { id: uid(), name:'Cream Twist Applicator', sku:'PP-AP-021', category:'Applicators', unit:'pcs', stock:9400, costPrice:2.4, sellPrice:3.5, reorderLevel:2000 };
+  const p4 = { id: uid(), name:'Child-Resistant Cap 28mm', sku:'PP-CC-028', category:'Caps & Closures', unit:'pcs', stock:30500, costPrice:1.1, sellPrice:1.7, reorderLevel:8000 };
+  STATE.products = [p1,p2,p3,p4];
+
+  const ord1 = { id: uid(), orderNo: nextOrderNo(), customerName:'Renata Pharmaceuticals', customerContact:'01711-000001', date: todayISO(), status:'Delivered',
+    items:[ {productId:p1.id, name:p1.name, qty:5000, price:2.6, cost:1.8}, {productId:p4.id, name:p4.name, qty:5000, price:1.7, cost:1.1} ] };
+  const ord2 = { id: uid(), orderNo: nextOrderNo(), customerName:'Square Pharma Ltd.', customerContact:'01711-000002', date: todayISO(), status:'Processing',
+    items:[ {productId:p2.id, name:p2.name, qty:1500, price:1.9, cost:1.2} ] };
+  STATE.orders = [ord1, ord2];
+  ord1.items.forEach(it=>{ const p = STATE.products.find(x=>x.id===it.productId); if(p) p.stock -= it.qty; });
+  ord2.items.forEach(it=>{ const p = STATE.products.find(x=>x.id===it.productId); if(p) p.stock -= it.qty; });
+
+  const inv1Total = ord1.items.reduce((s,i)=>s+i.qty*i.price,0);
+  const inv1 = { id: uid(), invoiceNo: nextInvoiceNo(), orderId: ord1.id, customerName: ord1.customerName, date: todayISO(),
+    items: ord1.items, subtotal: inv1Total, taxPct: 0, taxAmt: 0, total: inv1Total, paymentStatus:'Paid', paidAmount: inv1Total };
+  STATE.invoices = [inv1];
+
+  STATE.transactions = [
+    { id: uid(), date: todayISO(), type:'income', category:'Sales Revenue', description:'Payment received — ' + inv1.invoiceNo, amount: inv1Total, refInvoiceId: inv1.id },
+    { id: uid(), date: todayISO(), type:'expense', category:'Raw Material', description:'PP resin purchase — 500kg', amount: 42000 },
+    { id: uid(), date: todayISO(), type:'expense', category:'Salary & Wages', description:'Factory staff salary — monthly', amount: 185000 },
+    { id: uid(), date: todayISO(), type:'expense', category:'Utility', description:'Electricity bill', amount: 21500 }
+  ];
+
+  await Promise.all([saveProducts(), saveOrders(), saveInvoices(), saveTransactions(), saveCounters()]);
+  toast('Demo data loaded');
+  renderApp();
+}
+
+async function clearAllData(){
+  if(!confirm('This will permanently delete all products, orders, invoices and accounting entries. Continue?')) return;
+  STATE = { products: [], orders: [], invoices: [], transactions: [], counters: { order:0, invoice:0 } };
+  await Promise.all([saveProducts(), saveOrders(), saveInvoices(), saveTransactions(), saveCounters()]);
+  toast('All data cleared');
+  renderApp();
+}
+
+/* ===================== SHELL ===================== */
+function renderApp(){
+  const root = document.getElementById('root');
+  root.innerHTML = `
+    <div class="app">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <svg width="26" height="26" viewBox="0 0 30 30" fill="none"><circle cx="15" cy="15" r="14" stroke="#9FD6BC" stroke-width="1.4"/><path d="M15 4 V26 M4 15 H26" stroke="#9FD6BC" stroke-width="1" opacity=".4"/><circle cx="15" cy="15" r="5.5" fill="#E8A33D"/></svg>
+          <div><div class="t1">Planet Plastic</div><div class="t2">Operations</div></div>
+        </div>
+        ${navItem('dashboard','Dashboard','<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>')}
+        ${navItem('inventory','Inventory','<path d="M3 7 L12 3 L21 7 L12 11 Z"/><path d="M3 7 V17 L12 21 V11"/><path d="M21 7 V17 L12 21"/>')}
+        ${navItem('orders','Orders','<rect x="4" y="4" width="16" height="17" rx="1.5"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/>')}
+        ${navItem('invoices','Invoices','<path d="M6 3 H18 V21 L15 19 L12 21 L9 19 L6 21 Z"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/>')}
+        ${navItem('accounts','Accounts','<circle cx="12" cy="12" r="9"/><path d="M12 7 V17 M9 9.5 C9 8 10.3 7 12 7 C13.8 7 15 8 15 9.3 C15 11.8 9 11.3 9 14.5 C9 15.9 10.3 17 12 17 C13.8 17 15 16 15 14.5"/>')}
+        <div class="nav-spacer"></div>
+        <div class="sidebar-foot">PLANET PLASTIC · v1.0<br>Single-admin workspace<br><a href="#" onclick="clearAllData(); return false;" style="color:rgba(194,74,58,0.75); text-decoration:underline; display:inline-block; margin-top:6px;">Clear all data</a></div>
+      </aside>
+      <div class="main">
+        <div class="topbar">
+          <div>
+            <h1>${tabTitle()}</h1>
+            <div class="sub">${new Date().toLocaleDateString('en-GB',{weekday:'long', year:'numeric', month:'long', day:'numeric'})}</div>
+          </div>
+          <div style="display:flex; gap:10px;">${topbarActions()}</div>
+        </div>
+        <div class="content" id="contentRoot"></div>
+      </div>
+    </div>
+  `;
+  document.querySelectorAll('.navitem').forEach(b => b.addEventListener('click', () => { TAB = b.dataset.tab; renderApp(); }));
+  renderContent();
+}
+function navItem(tab, label, iconPath){
+  return `<button class="navitem ${TAB===tab?'active':''}" data-tab="${tab}">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${iconPath}</svg>
+    ${label}
+  </button>`;
+}
+function tabTitle(){
+  return { dashboard:'Dashboard', inventory:'Inventory', orders:'Orders', invoices:'Invoices', accounts:'Accounts' }[TAB];
+}
+function topbarActions(){
+  if(TAB==='inventory') return `<button class="btn" onclick="openProductModal()">+ Add Product</button>`;
+  if(TAB==='orders') return `<button class="btn" onclick="openOrderModal()">+ New Order</button>`;
+  if(TAB==='invoices') return `<button class="btn" onclick="openInvoiceModal()">+ New Invoice</button>`;
+  if(TAB==='accounts') return `<button class="btn" onclick="openTransactionModal()">+ Add Entry</button>`;
+  return '';
+}
+function renderContent(){
+  const r = document.getElementById('contentRoot');
+  if(TAB==='dashboard') r.innerHTML = viewDashboard();
+  else if(TAB==='inventory') r.innerHTML = viewInventory();
+  else if(TAB==='orders') r.innerHTML = viewOrders();
+  else if(TAB==='invoices') r.innerHTML = viewInvoices();
+  else if(TAB==='accounts') r.innerHTML = viewAccounts();
+  wireContentEvents();
+}
+
+/* ===================== DASHBOARD ===================== */
+function viewDashboard(){
+  const hasAnything = STATE.products.length || STATE.orders.length || STATE.transactions.length;
+  if(!hasAnything){
+    return emptyState('No data yet', 'Start by adding products, or load demo data to explore the workspace.',
+      `<button class="btn" onclick="openProductModal()">+ Add First Product</button>
+       <button class="btn btn-ghost" onclick="seedDemo()">Load Demo Data</button>`);
+  }
+  const stockValue = STATE.products.reduce((s,p)=>s+p.stock*p.costPrice,0);
+  const lowStock = STATE.products.filter(p=>p.stock <= p.reorderLevel);
+  const pendingOrders = STATE.orders.filter(o=>o.status==='Pending' || o.status==='Processing');
+  const thisMonth = todayISO().slice(0,7);
+  const monthTx = STATE.transactions.filter(t=>t.date.slice(0,7)===thisMonth);
+  const monthIncome = monthTx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const monthExpense = monthTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const netProfit = monthIncome - monthExpense;
+
+  return `
+    <div class="cards">
+      <div class="card"><div class="l">Inventory Value</div><div class="v">${fmt(stockValue)}</div><div class="d">${STATE.products.length} SKUs tracked</div></div>
+      <div class="card"><div class="l">Pending Orders</div><div class="v ${pendingOrders.length?'danger':''}">${pendingOrders.length}</div><div class="d">of ${STATE.orders.length} total orders</div></div>
+      <div class="card"><div class="l">Income — This Month</div><div class="v good">${fmt(monthIncome)}</div><div class="d">${monthTx.filter(t=>t.type==='income').length} entries</div></div>
+      <div class="card"><div class="l">Expense — This Month</div><div class="v danger">${fmt(monthExpense)}</div><div class="d">${monthTx.filter(t=>t.type==='expense').length} entries</div></div>
+      <div class="card"><div class="l">Net Profit — This Month</div><div class="v ${netProfit>=0?'good':'danger'}">${fmt(netProfit)}</div><div class="d">Income − Expense</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h3>Low Stock Alerts</h3><span class="muted mono" style="font-size:11px;">${lowStock.length} item(s)</span></div>
+      <div class="panel-body">
+        ${lowStock.length ? `<table><thead><tr><th>Product</th><th>SKU</th><th class="right">Stock</th><th class="right">Reorder Level</th></tr></thead><tbody>
+          ${lowStock.map(p=>`<tr class="row-hover"><td>${escapeHtml(p.name)}</td><td class="mono muted">${escapeHtml(p.sku)}</td><td class="right mono" style="color:var(--danger)">${p.stock.toLocaleString()}</td><td class="right mono muted">${p.reorderLevel.toLocaleString()}</td></tr>`).join('')}
+        </tbody></table>` : `<div style="padding:20px; color:var(--ink-soft); font-size:13px;">All products are above their reorder level.</div>`}
+      </div>
+    </div>
+
+    <div class="row2" style="align-items:start;">
+      <div class="panel">
+        <div class="panel-head"><h3>Recent Orders</h3></div>
+        <div class="panel-body">
+          ${STATE.orders.length ? `<table><thead><tr><th>Order</th><th>Customer</th><th>Status</th><th class="right">Total</th></tr></thead><tbody>
+            ${[...STATE.orders].reverse().slice(0,5).map(o=>`<tr class="row-hover"><td class="mono">${o.orderNo}</td><td>${escapeHtml(o.customerName)}</td><td>${statusTag(o.status)}</td><td class="right mono">${fmt(orderTotal(o))}</td></tr>`).join('')}
+          </tbody></table>` : `<div style="padding:20px; color:var(--ink-soft); font-size:13px;">No orders yet.</div>`}
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Recent Accounting Entries</h3></div>
+        <div class="panel-body">
+          ${STATE.transactions.length ? `<table><thead><tr><th>Date</th><th>Category</th><th class="right">Amount</th></tr></thead><tbody>
+            ${[...STATE.transactions].reverse().slice(0,5).map(t=>`<tr class="row-hover"><td class="mono muted">${t.date}</td><td>${escapeHtml(t.category)}</td><td class="right mono" style="color:${t.type==='income'?'var(--primary-deep)':'var(--danger)'}">${t.type==='income'?'+':'−'}${fmt(t.amount)}</td></tr>`).join('')}
+          </tbody></table>` : `<div style="padding:20px; color:var(--ink-soft); font-size:13px;">No accounting entries yet.</div>`}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function emptyState(title, desc, actionsHtml){
+  return `<div class="panel"><div class="empty">
+    <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+    <h4>${title}</h4><p>${desc}</p>
+    <div style="display:flex; gap:10px; justify-content:center;">${actionsHtml}</div>
+  </div></div>`;
+}
+function statusTag(s){
+  const cls = { Pending:'tag-pending', Processing:'tag-processing', Shipped:'tag-shipped', Delivered:'tag-delivered', Cancelled:'tag-cancelled' }[s] || 'tag-ok';
+  return `<span class="tag ${cls}">${s}</span>`;
+}
+function paymentTag(s){
+  const cls = { Unpaid:'tag-unpaid', 'Partially Paid':'tag-partial', Paid:'tag-paid' }[s] || 'tag-ok';
+  return `<span class="tag ${cls}">${s}</span>`;
+}
+function orderTotal(o){ return o.items.reduce((s,i)=>s+i.qty*i.price,0); }
+
+/* ===================== INVENTORY ===================== */
+function viewInventory(){
+  if(!STATE.products.length){
+    return emptyState('No products yet', 'Add your first product to start tracking stock.',
+      `<button class="btn" onclick="openProductModal()">+ Add Product</button><button class="btn btn-ghost" onclick="seedDemo()">Load Demo Data</button>`);
+  }
+  return `
+    <div class="panel">
+      <div class="panel-body">
+        <table>
+          <thead><tr><th>Product</th><th>SKU</th><th>Category</th><th class="right">Stock</th><th class="right">Cost Price</th><th class="right">Sell Price</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            ${STATE.products.map(p => {
+              const low = p.stock <= p.reorderLevel;
+              return `<tr class="row-hover">
+                <td><strong>${escapeHtml(p.name)}</strong></td>
+                <td class="mono muted">${escapeHtml(p.sku)}</td>
+                <td>${escapeHtml(p.category)}</td>
+                <td class="right mono">${p.stock.toLocaleString()} ${escapeHtml(p.unit)}</td>
+                <td class="right mono">${fmt(p.costPrice)}</td>
+                <td class="right mono">${fmt(p.sellPrice)}</td>
+                <td><span class="tag ${low?'tag-low':'tag-ok'}">${low?'Low Stock':'In Stock'}</span></td>
+                <td class="right">
+                  <button class="icon-btn" title="Edit" onclick="openProductModal('${p.id}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                  <button class="icon-btn" title="Delete" onclick="deleteProduct('${p.id}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+function openProductModal(id){
+  const p = id ? STATE.products.find(x=>x.id===id) : null;
+  const m = modal(p?'Edit Product':'Add Product', `
+    <div class="field"><label>Product Name</label><input id="f_name" value="${p?escapeHtml(p.name):''}" placeholder="e.g. 5ml Calibrated Dropper"></div>
+    <div class="row2">
+      <div class="field"><label>SKU</label><input id="f_sku" value="${p?escapeHtml(p.sku):''}" placeholder="PP-DR-005"></div>
+      <div class="field"><label>Category</label><select id="f_category">${PRODUCT_CATEGORIES.map(c=>`<option ${p&&p.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label>Stock Qty</label><input id="f_stock" type="number" min="0" value="${p?p.stock:0}"></div>
+      <div class="field"><label>Unit</label><input id="f_unit" value="${p?escapeHtml(p.unit):'pcs'}"></div>
+      <div class="field"><label>Reorder Level</label><input id="f_reorder" type="number" min="0" value="${p?p.reorderLevel:0}"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Cost Price / unit</label><input id="f_cost" type="number" min="0" step="0.01" value="${p?p.costPrice:''}"></div>
+      <div class="field"><label>Sell Price / unit</label><input id="f_sell" type="number" min="0" step="0.01" value="${p?p.sellPrice:''}"></div>
+    </div>
+  `, async () => {
+    const name = document.getElementById('f_name').value.trim();
+    if(!name){ toast('Product name is required', true); return false; }
+    const data = {
+      name, sku: document.getElementById('f_sku').value.trim() || 'SKU-'+uid().slice(0,5),
+      category: document.getElementById('f_category').value,
+      stock: Number(document.getElementById('f_stock').value)||0,
+      unit: document.getElementById('f_unit').value.trim() || 'pcs',
+      reorderLevel: Number(document.getElementById('f_reorder').value)||0,
+      costPrice: Number(document.getElementById('f_cost').value)||0,
+      sellPrice: Number(document.getElementById('f_sell').value)||0
+    };
+    if(p){ Object.assign(p, data); } else { STATE.products.push({ id: uid(), ...data }); }
+    await saveProducts();
+    toast(p?'Product updated':'Product added');
+    closeModal(); renderApp();
+    return true;
+  }, p?'Save Changes':'Add Product');
+  openModalEl(m);
+}
+async function deleteProduct(id){
+  if(!confirm('Delete this product? This cannot be undone.')) return;
+  STATE.products = STATE.products.filter(p=>p.id!==id);
+  await saveProducts();
+  toast('Product deleted');
+  renderApp();
+}
+
+/* ===================== ORDERS ===================== */
+function viewOrders(){
+  if(!STATE.orders.length){
+    return emptyState('No orders yet', 'Create your first customer order to start tracking fulfilment.',
+      `<button class="btn" onclick="openOrderModal()">+ New Order</button><button class="btn btn-ghost" onclick="seedDemo()">Load Demo Data</button>`);
+  }
+  return `
+    <div class="panel">
+      <div class="panel-body">
+        <table>
+          <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th>Items</th><th class="right">Total</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            ${[...STATE.orders].reverse().map(o => `
+              <tr class="row-hover">
+                <td class="mono">${o.orderNo}</td>
+                <td>${escapeHtml(o.customerName)}</td>
+                <td class="mono muted">${o.date}</td>
+                <td class="muted">${o.items.length} line item(s)</td>
+                <td class="right mono">${fmt(orderTotal(o))}</td>
+                <td>
+                  <select class="tag" style="border:1px solid var(--line); padding:4px 7px;" onchange="updateOrderStatus('${o.id}', this.value)">
+                    ${ORDER_STATUSES.map(s=>`<option ${o.status===s?'selected':''}>${s}</option>`).join('')}
+                  </select>
+                </td>
+                <td class="right">
+                  <button class="icon-btn" title="Make Invoice" onclick="openInvoiceModal(null, '${o.id}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2Z"/><line x1="9" y1="8" x2="15" y2="8"/></svg></button>
+                  <button class="icon-btn" title="Delete" onclick="deleteOrder('${o.id}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+async function updateOrderStatus(id, status){
+  const o = STATE.orders.find(x=>x.id===id);
+  if(!o) return;
+  if(status==='Cancelled' && o.status!=='Cancelled'){
+    o.items.forEach(it=>{ const p = STATE.products.find(x=>x.id===it.productId); if(p) p.stock += it.qty; });
+  } else if(o.status==='Cancelled' && status!=='Cancelled'){
+    o.items.forEach(it=>{ const p = STATE.products.find(x=>x.id===it.productId); if(p) p.stock -= it.qty; });
+  }
+  o.status = status;
+  await Promise.all([saveOrders(), saveProducts()]);
+  toast('Order status updated');
+  renderApp();
+}
+let ORDER_LINES = [];
+function openOrderModal(id){
+  const o = id ? STATE.orders.find(x=>x.id===id) : null;
+  if(!STATE.products.length){ toast('Add at least one product before creating an order', true); return; }
+  ORDER_LINES = o ? o.items.map(i=>({...i, _lastId: i.productId})) : [{ productId:'', qty:1, price:0, cost:0, name:'' }];
+  const m = modal(o?'Edit Order':'New Order', `
+    <div class="row2">
+      <div class="field"><label>Customer Name</label><input id="f_cust" value="${o?escapeHtml(o.customerName):''}" placeholder="e.g. Square Pharma Ltd."></div>
+      <div class="field"><label>Contact</label><input id="f_contact" value="${o?escapeHtml(o.customerContact||''):''}" placeholder="Phone / email"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Order Date</label><input id="f_date" type="date" value="${o?o.date:todayISO()}"></div>
+      <div class="field"><label>Status</label><select id="f_status">${ORDER_STATUSES.map(s=>`<option ${o&&o.status===s?'selected':''}>${s}</option>`).join('')}</select></div>
+    </div>
+    <label style="font-family:var(--mono); font-size:10.5px; text-transform:uppercase; color:var(--ink-soft); display:block; margin-bottom:6px;">Order Items</label>
+    <div class="line-items" id="lineItems"></div>
+    <button type="button" class="btn btn-ghost btn-sm" style="margin-top:10px;" onclick="addOrderLine()">+ Add Line Item</button>
+    <div style="text-align:right; margin-top:14px; font-family:var(--display); font-weight:700; font-size:16px;">Total: <span id="orderLineTotal">৳0</span></div>
+  `, async () => {
+    const customerName = document.getElementById('f_cust').value.trim();
+    if(!customerName){ toast('Customer name is required', true); return false; }
+    const items = ORDER_LINES.filter(l=>l.productId && l.qty>0);
+    if(!items.length){ toast('Add at least one valid line item', true); return false; }
+
+    const wasCancelled = o && o.status === 'Cancelled';
+    if(o && !wasCancelled){
+      // restore old stock before applying new
+      o.items.forEach(it=>{ const p = STATE.products.find(x=>x.id===it.productId); if(p) p.stock += it.qty; });
+    }
+    const newStatus = document.getElementById('f_status').value;
+    for(const it of items){
+      const p = STATE.products.find(x=>x.id===it.productId);
+      if(p && p.stock < it.qty && newStatus !== 'Cancelled'){
+        if(!confirm(`Stock for "${p.name}" is only ${p.stock} ${p.unit}. Continue anyway?`)){
+          if(o && !wasCancelled) o.items.forEach(it2=>{ const p2 = STATE.products.find(x=>x.id===it2.productId); if(p2) p2.stock -= it2.qty; });
+          return false;
+        }
+      }
+    }
+    if(newStatus !== 'Cancelled'){
+      items.forEach(it=>{ const p = STATE.products.find(x=>x.id===it.productId); if(p){ p.stock -= it.qty; it.name=p.name; it.cost=p.costPrice; } });
+    } else {
+      items.forEach(it=>{ const p = STATE.products.find(x=>x.id===it.productId); if(p){ it.name=p.name; it.cost=p.costPrice; } });
+    }
+
+    const data = { customerName, customerContact: document.getElementById('f_contact').value.trim(), date: document.getElementById('f_date').value || todayISO(), status: document.getElementById('f_status').value, items };
+    if(o){ Object.assign(o, data); } else { STATE.orders.push({ id: uid(), orderNo: nextOrderNo(), ...data }); await saveCounters(); }
+    await Promise.all([saveOrders(), saveProducts()]);
+    toast(o?'Order updated':'Order created');
+    closeModal(); renderApp();
+    return true;
+  }, o?'Save Changes':'Create Order', true);
+  openModalEl(m);
+  renderOrderLines();
+}
+function renderOrderLines(){
+  const el = document.getElementById('lineItems');
+  if(!el) return;
+  let total = 0;
+  el.innerHTML = `<div class="li-row head"><div>Product</div><div>Qty</div><div>Price</div><div>Line Total</div><div></div></div>` +
+    ORDER_LINES.map((line, idx) => {
+      const p = STATE.products.find(x=>x.id===line.productId);
+      if(p && (!line.price || line.productId !== line._lastId)){ line.price = p.sellPrice; line._lastId = line.productId; }
+      const lineTotal = (line.qty||0) * (line.price||0);
+      total += lineTotal;
+      return `<div class="li-row">
+        <select onchange="ORDER_LINES[${idx}].productId=this.value; ORDER_LINES[${idx}].price=0; renderOrderLines();">
+          <option value="">Select product…</option>
+          ${STATE.products.map(pr=>`<option value="${pr.id}" ${line.productId===pr.id?'selected':''}>${escapeHtml(pr.name)} (${pr.stock} ${escapeHtml(pr.unit)} avail.)</option>`).join('')}
+        </select>
+        <input type="number" min="1" value="${line.qty||1}" onchange="ORDER_LINES[${idx}].qty=Number(this.value)||0; renderOrderLines();">
+        <input type="number" min="0" step="0.01" value="${line.price||0}" onchange="ORDER_LINES[${idx}].price=Number(this.value)||0; renderOrderLines();">
+        <div class="mono" style="font-size:12.5px;">${fmt(lineTotal)}</div>
+        <button type="button" class="li-remove" onclick="removeOrderLine(${idx})">✕</button>
+      </div>`;
+    }).join('');
+  const tEl = document.getElementById('orderLineTotal');
+  if(tEl) tEl.textContent = fmt(total);
+}
+function addOrderLine(){ ORDER_LINES.push({ productId:'', qty:1, price:0 }); renderOrderLines(); }
+function removeOrderLine(idx){ ORDER_LINES.splice(idx,1); if(!ORDER_LINES.length) ORDER_LINES.push({productId:'',qty:1,price:0}); renderOrderLines(); }
+
+async function deleteOrder(id){
+  if(!confirm('Delete this order? Reserved stock will be restored.')) return;
+  const o = STATE.orders.find(x=>x.id===id);
+  if(o && o.status!=='Cancelled') o.items.forEach(it=>{ const p = STATE.products.find(x=>x.id===it.productId); if(p) p.stock += it.qty; });
+  STATE.orders = STATE.orders.filter(x=>x.id!==id);
+  await Promise.all([saveOrders(), saveProducts()]);
+  toast('Order deleted');
+  renderApp();
+}
+
+/* ===================== INVOICES ===================== */
+function viewInvoices(){
+  if(!STATE.invoices.length){
+    return emptyState('No invoices yet', 'Generate an invoice from an existing order, or create one manually.',
+      `<button class="btn" onclick="openInvoiceModal()">+ New Invoice</button>${STATE.orders.length?'':'<button class="btn btn-ghost" onclick="seedDemo()">Load Demo Data</button>'}`);
+  }
+  return `
+    <div class="panel">
+      <div class="panel-body">
+        <table>
+          <thead><tr><th>Invoice</th><th>Customer</th><th>Date</th><th class="right">Total</th><th class="right">Paid</th><th class="right">Due</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            ${[...STATE.invoices].reverse().map(inv => {
+              const due = inv.total - inv.paidAmount;
+              return `<tr class="row-hover">
+                <td class="mono">${inv.invoiceNo}</td>
+                <td>${escapeHtml(inv.customerName)}</td>
+                <td class="mono muted">${inv.date}</td>
+                <td class="right mono">${fmt(inv.total)}</td>
+                <td class="right mono" style="color:var(--primary-deep)">${fmt(inv.paidAmount)}</td>
+                <td class="right mono" style="color:${due>0?'var(--danger)':'var(--ink-soft)'}">${fmt(due)}</td>
+                <td>${paymentTag(inv.paymentStatus)}</td>
+                <td class="right">
+                  <button class="icon-btn" title="Record Payment" onclick="openPaymentModal('${inv.id}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M9.5 12l1.8 1.8L15 10"/></svg></button>
+                  <button class="icon-btn" title="Delete" onclick="deleteInvoice('${inv.id}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+function openInvoiceModal(id, orderId){
+  const inv = id ? STATE.invoices.find(x=>x.id===id) : null;
+  const linkedOrder = orderId ? STATE.orders.find(x=>x.id===orderId) : (inv && inv.orderId ? STATE.orders.find(x=>x.id===inv.orderId) : null);
+  const items = inv ? inv.items : (linkedOrder ? linkedOrder.items : []);
+  const subtotal = items.reduce((s,i)=>s+i.qty*i.price,0);
+
+  const m = modal(inv?'Edit Invoice':'New Invoice', `
+    ${linkedOrder ? `<div class="spec-like" style="font-family:var(--mono); font-size:11.5px; background:var(--primary-wash); color:var(--primary-deep); padding:8px 12px; border-radius:5px; margin-bottom:14px;">Linked to order ${linkedOrder.orderNo}</div>` : ''}
+    <div class="row2">
+      <div class="field"><label>Customer Name</label><input id="f_icust" value="${inv?escapeHtml(inv.customerName):(linkedOrder?escapeHtml(linkedOrder.customerName):'')}" placeholder="Customer / company name"></div>
+      <div class="field"><label>Invoice Date</label><input id="f_idate" type="date" value="${inv?inv.date:todayISO()}"></div>
+    </div>
+    ${items.length ? `<div class="line-items" style="margin-bottom:10px;">
+      <div class="li-row head" style="grid-template-columns:2.5fr 1fr 1fr 1fr;"><div>Item</div><div>Qty</div><div>Price</div><div>Total</div></div>
+      ${items.map(i=>`<div class="li-row" style="grid-template-columns:2.5fr 1fr 1fr 1fr;"><div>${escapeHtml(i.name)}</div><div class="mono">${i.qty}</div><div class="mono">${fmt(i.price)}</div><div class="mono">${fmt(i.qty*i.price)}</div></div>`).join('')}
+    </div>` : `<div class="field"><label>Description</label><textarea id="f_idesc" rows="2" placeholder="Manual invoice description (no linked order)"></textarea></div>`}
+    <div class="row2">
+      <div class="field"><label>Tax / VAT %</label><input id="f_tax" type="number" min="0" step="0.1" value="${inv?inv.taxPct:0}"></div>
+      <div class="field"><label>Payment Status</label><select id="f_pstatus">
+        ${['Unpaid','Partially Paid','Paid'].map(s=>`<option ${inv&&inv.paymentStatus===s?'selected':''}>${s}</option>`).join('')}
+      </select></div>
+    </div>
+    <div id="invTotalsBox" style="text-align:right; font-size:13px; color:var(--ink-soft); margin-top:6px;"></div>
+  `, async () => {
+    const customerName = document.getElementById('f_icust').value.trim();
+    if(!customerName){ toast('Customer name is required', true); return false; }
+    const taxPct = Number(document.getElementById('f_tax').value)||0;
+    const finalSubtotal = items.length ? items.reduce((s,i)=>s+i.qty*i.price,0) : 0;
+    const taxAmt = finalSubtotal * taxPct / 100;
+    const total = finalSubtotal + taxAmt;
+    const paymentStatus = document.getElementById('f_pstatus').value;
+    let paidAmount = inv ? inv.paidAmount : 0;
+    if(paymentStatus==='Paid') paidAmount = total;
+    if(paymentStatus==='Unpaid') paidAmount = 0;
+
+    const data = { customerName, date: document.getElementById('f_idate').value || todayISO(), items, subtotal: finalSubtotal, taxPct, taxAmt, total, paymentStatus, paidAmount, orderId: linkedOrder?linkedOrder.id:(inv?inv.orderId:null) };
+
+    let invoice;
+    if(inv){
+      removeIncomeForInvoice(inv.id);
+      Object.assign(inv, data);
+      invoice = inv;
+    } else {
+      invoice = { id: uid(), invoiceNo: nextInvoiceNo(), ...data };
+      STATE.invoices.push(invoice);
+      await saveCounters();
+    }
+    if(paidAmount > 0){
+      STATE.transactions.push({ id: uid(), date: invoice.date, type:'income', category:'Sales Revenue', description:'Payment received — '+invoice.invoiceNo, amount: paidAmount, refInvoiceId: invoice.id });
+    }
+    await Promise.all([saveInvoices(), saveTransactions()]);
+    toast(inv?'Invoice updated':'Invoice created');
+    closeModal(); renderApp();
+    return true;
+  }, inv?'Save Changes':'Create Invoice');
+  openModalEl(m);
+  const updateTotals = () => {
+    const taxPct = Number(document.getElementById('f_tax').value)||0;
+    const taxAmt = subtotal * taxPct/100;
+    document.getElementById('invTotalsBox').innerHTML = `Subtotal: ${fmt(subtotal)} &nbsp;·&nbsp; Tax: ${fmt(taxAmt)} &nbsp;·&nbsp; <strong style="color:var(--ink); font-size:15px;">Total: ${fmt(subtotal+taxAmt)}</strong>`;
+  };
+  document.getElementById('f_tax').addEventListener('input', updateTotals);
+  updateTotals();
+}
+function removeIncomeForInvoice(invId){
+  STATE.transactions = STATE.transactions.filter(t => t.refInvoiceId !== invId);
+}
+function openPaymentModal(id){
+  const inv = STATE.invoices.find(x=>x.id===id);
+  if(!inv) return;
+  const due = inv.total - inv.paidAmount;
+  const m = modal('Record Payment — ' + inv.invoiceNo, `
+    <div style="margin-bottom:14px; font-size:13.5px; color:var(--ink-soft);">Total: <strong style="color:var(--ink);">${fmt(inv.total)}</strong> &nbsp;·&nbsp; Already Paid: <strong style="color:var(--primary-deep);">${fmt(inv.paidAmount)}</strong> &nbsp;·&nbsp; Due: <strong style="color:var(--danger);">${fmt(due)}</strong></div>
+    <div class="field"><label>Payment Amount</label><input id="f_payamt" type="number" min="0" max="${due}" step="0.01" value="${due}"></div>
+    <div class="field"><label>Payment Date</label><input id="f_paydate" type="date" value="${todayISO()}"></div>
+  `, async () => {
+    const amt = Number(document.getElementById('f_payamt').value)||0;
+    if(amt<=0){ toast('Enter a valid amount', true); return false; }
+    inv.paidAmount = Math.min(inv.total, inv.paidAmount + amt);
+    inv.paymentStatus = inv.paidAmount >= inv.total ? 'Paid' : 'Partially Paid';
+    STATE.transactions.push({ id: uid(), date: document.getElementById('f_paydate').value||todayISO(), type:'income', category:'Sales Revenue', description:'Payment received — '+inv.invoiceNo, amount: amt, refInvoiceId: inv.id });
+    await Promise.all([saveInvoices(), saveTransactions()]);
+    toast('Payment recorded');
+    closeModal(); renderApp();
+    return true;
+  }, 'Record Payment');
+  openModalEl(m);
+}
+async function deleteInvoice(id){
+  if(!confirm('Delete this invoice? Linked income entries will also be removed.')) return;
+  removeIncomeForInvoice(id);
+  STATE.invoices = STATE.invoices.filter(x=>x.id!==id);
+  await Promise.all([saveInvoices(), saveTransactions()]);
+  toast('Invoice deleted');
+  renderApp();
+}
+
+/* ===================== ACCOUNTS ===================== */
+function viewAccounts(){
+  return `
+    <div class="tabbar">
+      <button class="tabbtn ${ACCT_SUBTAB==='ledger'?'active':''}" onclick="ACCT_SUBTAB='ledger'; renderContent();">Ledger</button>
+      <button class="tabbtn ${ACCT_SUBTAB==='pl'?'active':''}" onclick="ACCT_SUBTAB='pl'; renderContent();">Profit &amp; Loss</button>
+    </div>
+    ${ACCT_SUBTAB==='ledger' ? viewLedger() : viewPL()}
+  `;
+}
+function viewLedger(){
+  if(!STATE.transactions.length){
+    return emptyState('No accounting entries yet', 'Record your first income or expense entry.',
+      `<button class="btn" onclick="openTransactionModal()">+ Add Entry</button><button class="btn btn-ghost" onclick="seedDemo()">Load Demo Data</button>`);
+  }
+  const totalIncome = STATE.transactions.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const totalExpense = STATE.transactions.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  return `
+    <div class="cards" style="grid-template-columns:repeat(3,1fr);">
+      <div class="card"><div class="l">Total Income (All Time)</div><div class="v good">${fmt(totalIncome)}</div></div>
+      <div class="card"><div class="l">Total Expense (All Time)</div><div class="v danger">${fmt(totalExpense)}</div></div>
+      <div class="card"><div class="l">Net Balance</div><div class="v ${totalIncome-totalExpense>=0?'good':'danger'}">${fmt(totalIncome-totalExpense)}</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>Transaction Ledger</h3></div>
+      <div class="panel-body">
+        <table>
+          <thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Description</th><th class="right">Amount</th><th></th></tr></thead>
+          <tbody>
+            ${[...STATE.transactions].reverse().map(t => `
+              <tr class="row-hover">
+                <td class="mono muted">${t.date}</td>
+                <td><span class="tag ${t.type==='income'?'tag-income':'tag-expense'}">${t.type==='income'?'Income':'Expense'}</span></td>
+                <td>${escapeHtml(t.category)}</td>
+                <td class="muted">${escapeHtml(t.description||'—')}</td>
+                <td class="right mono" style="color:${t.type==='income'?'var(--primary-deep)':'var(--danger)'}">${t.type==='income'?'+':'−'}${fmt(t.amount)}</td>
+                <td class="right">${t.refInvoiceId ? '' : `<button class="icon-btn" title="Delete" onclick="deleteTransaction('${t.id}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>`}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+function viewPL(){
+  const now = new Date();
+  const defaultFrom = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);
+  const defaultTo = todayISO();
+  if(!PL_FROM) PL_FROM = defaultFrom;
+  if(!PL_TO) PL_TO = defaultTo;
+  return `
+    <div class="panel">
+      <div class="filter-bar">
+        <label class="mono" style="font-size:11px; color:var(--ink-soft);">FROM</label>
+        <input type="date" id="pl_from" value="${PL_FROM}" onchange="PL_FROM=this.value; renderContent();">
+        <label class="mono" style="font-size:11px; color:var(--ink-soft);">TO</label>
+        <input type="date" id="pl_to" value="${PL_TO}" onchange="PL_TO=this.value; renderContent();">
+      </div>
+      <div class="panel-body pad" id="plBody"></div>
+    </div>
+  `;
+}
+function computePL(){
+  const from = PL_FROM || '0000-00-00';
+  const to = PL_TO || '9999-99-99';
+  const tx = STATE.transactions.filter(t => t.date >= from && t.date <= to);
+  const revenue = tx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+
+  const orders = STATE.orders.filter(o => o.date >= from && o.date <= to && o.status !== 'Cancelled');
+  const cogs = orders.reduce((s,o)=>s + o.items.reduce((s2,i)=>s2+(i.cost||0)*i.qty,0), 0);
+
+  const expensesByCat = {};
+  tx.filter(t=>t.type==='expense').forEach(t=>{ expensesByCat[t.category] = (expensesByCat[t.category]||0) + t.amount; });
+  const totalExpense = Object.values(expensesByCat).reduce((a,b)=>a+b,0);
+
+  const grossProfit = revenue - cogs;
+  const netProfit = grossProfit - totalExpense;
+  return { revenue, cogs, expensesByCat, totalExpense, grossProfit, netProfit, from, to };
+}
+function renderPLBody(){
+  const box = document.getElementById('plBody');
+  if(!box) return;
+  const r = computePL();
+  box.innerHTML = `
+    <table class="pl-table">
+      <tbody>
+        <tr class="pl-section"><td colspan="2">Revenue</td></tr>
+        <tr><td>Sales &amp; other income recorded</td><td class="right mono">${fmt(r.revenue)}</td></tr>
+
+        <tr class="pl-section"><td colspan="2">Cost of Goods Sold</td></tr>
+        <tr><td>Product cost on fulfilled order items</td><td class="right mono">−${fmt(r.cogs)}</td></tr>
+        <tr style="font-weight:600;"><td>Gross Profit</td><td class="right mono">${fmt(r.grossProfit)}</td></tr>
+
+        <tr class="pl-section"><td colspan="2">Operating Expenses</td></tr>
+        ${Object.keys(r.expensesByCat).length ? Object.entries(r.expensesByCat).map(([cat,amt])=>`<tr><td>${escapeHtml(cat)}</td><td class="right mono">−${fmt(amt)}</td></tr>`).join('') : `<tr><td class="muted">No expense entries in this period</td><td></td></tr>`}
+        <tr style="font-weight:600;"><td>Total Operating Expenses</td><td class="right mono">−${fmt(r.totalExpense)}</td></tr>
+
+        <tr class="pl-total"><td style="font-family:var(--display); font-size:15px;">Net Profit / Loss</td><td class="right" style="font-family:var(--display); font-size:18px; color:${r.netProfit>=0?'var(--primary-deep)':'var(--danger)'};">${fmt(r.netProfit)}</td></tr>
+      </tbody>
+    </table>
+    <div class="mono" style="font-size:10.5px; color:var(--ink-soft); margin-top:14px;">Period: ${r.from} → ${r.to}</div>
+  `;
+}
+function openTransactionModal(){
+  const m = modal('Add Accounting Entry', `
+    <div class="field"><label>Type</label>
+      <select id="f_ttype" onchange="document.getElementById('f_tcat').innerHTML = buildCatOptions(this.value)">
+        <option value="income">Income</option>
+        <option value="expense" selected>Expense</option>
+      </select>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Category</label><select id="f_tcat">${buildCatOptions('expense')}</select></div>
+      <div class="field"><label>Date</label><input id="f_tdate" type="date" value="${todayISO()}"></div>
+    </div>
+    <div class="field"><label>Amount</label><input id="f_tamt" type="number" min="0" step="0.01" placeholder="0.00"></div>
+    <div class="field"><label>Description</label><input id="f_tdesc" placeholder="Short note (optional)"></div>
+  `, async () => {
+    const amount = Number(document.getElementById('f_tamt').value)||0;
+    if(amount<=0){ toast('Enter a valid amount', true); return false; }
+    STATE.transactions.push({
+      id: uid(), date: document.getElementById('f_tdate').value||todayISO(),
+      type: document.getElementById('f_ttype').value,
+      category: document.getElementById('f_tcat').value,
+      description: document.getElementById('f_tdesc').value.trim(),
+      amount
+    });
+    await saveTransactions();
+    toast('Entry added');
+    closeModal(); renderApp();
+    return true;
+  }, 'Add Entry');
+  openModalEl(m);
+}
+function buildCatOptions(type){
+  return (type==='income'?INCOME_CATEGORIES:EXPENSE_CATEGORIES).map(c=>`<option>${c}</option>`).join('');
+}
+async function deleteTransaction(id){
+  if(!confirm('Delete this entry?')) return;
+  STATE.transactions = STATE.transactions.filter(t=>t.id!==id);
+  await saveTransactions();
+  toast('Entry deleted');
+  renderApp();
+}
+
+/* ===================== MODAL FRAMEWORK ===================== */
+function modal(title, bodyHtml, onSave, saveLabel, wide){
+  const div = document.createElement('div');
+  div.className = 'overlay';
+  div.id = 'overlayEl';
+  div.innerHTML = `
+    <div class="modal ${wide?'wide':''}">
+      <div class="modal-head"><h3>${title}</h3><button class="icon-btn" onclick="closeModal()">✕</button></div>
+      <div class="modal-body">${bodyHtml}</div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn" id="modalSaveBtn">${saveLabel}</button>
+      </div>
+    </div>
+  `;
+  div._onSave = onSave;
+  div.addEventListener('mousedown', (e) => { if(e.target===div) closeModal(); });
+  return div;
+}
+function openModalEl(div){
+  document.body.appendChild(div);
+  document.getElementById('modalSaveBtn').addEventListener('click', async () => { await div._onSave(); });
+}
+function closeModal(){
+  const el = document.getElementById('overlayEl');
+  if(el) el.remove();
+}
+
+/* ===================== POST-RENDER WIRING ===================== */
+function wireContentEvents(){
+  if(TAB==='accounts' && ACCT_SUBTAB==='pl'){ renderPLBody(); }
+}
+
+document.addEventListener('keydown', (e) => { if(e.key==='Escape') closeModal(); });
+
+loadAll();
+</script>
+</body>
+</html>
