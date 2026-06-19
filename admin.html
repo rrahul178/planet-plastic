@@ -155,13 +155,42 @@ tr.row-hover:hover{background:#FAFBFB;}
 .spinner{width:26px; height:26px; border:2.5px solid var(--line); border-top-color:var(--primary); border-radius:50%; animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
+/* MOBILE HAMBURGER */
+.hamburger{display:none; flex-direction:column; gap:5px; background:none; border:none; cursor:pointer; padding:6px; margin-right:4px;}
+.hamburger span{width:20px; height:2px; background:var(--ink); border-radius:2px; display:block; transition:all .2s;}
+.sidebar-overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:299;}
+.sidebar-overlay.show{display:block;}
+
+/* MOBILE BOTTOM NAV */
+.bottom-nav{display:none;}
+
 @media (max-width: 880px){
-  .sidebar{position:fixed; left:-228px; top:0; bottom:0; z-index:300; transition:left .2s;}
-  .sidebar.open{left:0;}
+  .sidebar{position:fixed; left:-228px; top:0; bottom:0; z-index:300; transition:left .2s; overflow-y:auto;}
+  .sidebar.open{left:0; box-shadow:4px 0 20px rgba(0,0,0,0.25);}
+  .hamburger{display:flex;}
   .cards{grid-template-columns:repeat(2,1fr);}
   .row2,.row3{grid-template-columns:1fr;}
   .li-row{grid-template-columns:1fr; gap:6px;}
   table{display:block; overflow-x:auto;}
+  .main{padding-bottom:64px;}
+  .content{padding:16px 14px 60px;}
+  .topbar{padding:0 14px;}
+
+  /* Bottom navigation bar */
+  .bottom-nav{
+    display:flex; position:fixed; bottom:0; left:0; right:0; height:60px;
+    background:var(--ink); z-index:250; border-top:1px solid rgba(255,255,255,0.1);
+    justify-content:space-around; align-items:center; padding:0 4px;
+  }
+  .bn-item{
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    background:none; border:none; color:rgba(255,255,255,0.55); font-family:var(--body);
+    font-size:10px; font-weight:500; padding:6px 10px; border-radius:6px; cursor:pointer;
+    flex:1; transition:all .15s;
+  }
+  .bn-item svg{flex-shrink:0;}
+  .bn-item.active{color:#fff; background:rgba(255,255,255,0.1);}
+  .bn-item span{font-size:9.5px; line-height:1;}
 }
 </style>
 </head>
@@ -298,17 +327,38 @@ function renderApp(){
       </aside>
       <div class="main">
         <div class="topbar">
-          <div>
-            <h1>${tabTitle()}</h1>
-            <div class="sub">${new Date().toLocaleDateString('en-GB',{weekday:'long', year:'numeric', month:'long', day:'numeric'})}</div>
+          <div style="display:flex; align-items:center; gap:4px;">
+            <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Menu">
+              <span></span><span></span><span></span>
+            </button>
+            <div>
+              <h1>${tabTitle()}</h1>
+              <div class="sub">${new Date().toLocaleDateString('en-GB',{weekday:'long', year:'numeric', month:'long', day:'numeric'})}</div>
+            </div>
           </div>
           <div style="display:flex; gap:10px;">${topbarActions()}</div>
         </div>
         <div class="content" id="contentRoot"></div>
       </div>
     </div>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <nav class="bottom-nav">
+      ${bnItem('dashboard','<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>','Home')}
+      ${bnItem('inventory','<path d="M3 7 L12 3 L21 7 L12 11 Z"/><path d="M3 7 V17 L12 21 V11"/><path d="M21 7 V17 L12 21"/>','Inventory')}
+      ${bnItem('orders','<rect x="4" y="4" width="16" height="17" rx="1.5"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/>','Orders')}
+      ${bnItem('invoices','<path d="M6 3 H18 V21 L15 19 L12 21 L9 19 L6 21 Z"/><line x1="9" y1="8" x2="15" y2="8"/>','Invoices')}
+      ${bnItem('accounts','<circle cx="12" cy="12" r="9"/><path d="M12 7 V17 M9 9.5 C9 8 10.3 7 12 7"/>','Accounts')}
+    </nav>
   `;
-  document.querySelectorAll('.navitem').forEach(b => b.addEventListener('click', () => { TAB = b.dataset.tab; renderApp(); }));
+  document.querySelectorAll('.navitem').forEach(b => b.addEventListener('click', () => {
+    TAB = b.dataset.tab;
+    // close sidebar on mobile after nav
+    const sb = document.getElementById('sidebar');
+    const ov = document.getElementById('sidebarOverlay');
+    if(sb) sb.classList.remove('open');
+    if(ov) ov.classList.remove('show');
+    renderApp();
+  }));
   renderContent();
 }
 function navItem(tab, label, iconPath){
@@ -316,6 +366,20 @@ function navItem(tab, label, iconPath){
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${iconPath}</svg>
     ${label}
   </button>`;
+}
+function bnItem(tab, iconPath, label){
+  return `<button class="bn-item ${TAB===tab?'active':''}" onclick="TAB='${tab}'; renderApp();">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${iconPath}</svg>
+    <span>${label}</span>
+  </button>`;
+}
+function toggleSidebar(){
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebarOverlay');
+  if(!sb) return;
+  const isOpen = sb.classList.contains('open');
+  sb.classList.toggle('open', !isOpen);
+  ov.classList.toggle('show', !isOpen);
 }
 function tabTitle(){
   return { dashboard:'Dashboard', inventory:'Inventory', orders:'Orders', invoices:'Invoices', accounts:'Accounts' }[TAB];
